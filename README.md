@@ -1,7 +1,9 @@
 # smsparty
-sms proxy for distributed text messaging
+Originally made for DefCon when all my coworkers had burner phones.
+smsparty sms proxy for distributed text messaging.  It lets you add new users via text.  Good for growing group texts, away team travels where people's numbers are changing, or my recent bachelor party.
 
 ## edit a secrets.yml file
+(emails not necessary or utilized at this point)
 ```
 ---
 account_sid: "TwilloAccountSIDNumber"
@@ -18,7 +20,14 @@ users:
     phone: '+12545557676'
     email: example@hotmail.com
 ```
-
+### help menu
+```
+~help display this message
+~stop stop messages from flowing
+~start start messages flowing
+~name change your name
+~list list users
+```
 ## install dependencies
 `bundle`
 
