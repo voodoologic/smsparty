@@ -1,0 +1,10 @@
+version: '2'
+services:
+  web:
+    build: .
+    ports:
+      - '9292:9292'
+  redis:
+    image: 'redis:alpine'
+    links:
+      - 'web'
