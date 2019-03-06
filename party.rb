@@ -145,24 +145,31 @@ class Party < Sinatra::Base
   end
 
   def mms_send(phone_number, body, media_url)
-    if ENV['RACK_ENV'] != 'test'
-      client.account.messages.create(
-        from: PHONE_NUMBER,
-        to: phone_number,
-        body: body,
-        media_url: media_url
-      )
-    end
+    return if ENV['RACK_ENV'] == 'test'
+    account = client.api.account
+    account.messages.create(
+      from: PHONE_NUMBER,
+      to: phone_number,
+      body: body,
+      media_url: media_url
+    )
+  rescue => e
+    puts e
+    binding.pry
   end
 
   def sms_send(phone_number, body)
-    if ENV['RACK_ENV'] != 'test'
-      client.account.messages.create(
-        from: PHONE_NUMBER,
-        to: phone_number,
-        body: body
-      )
-    end
+    return if ENV['RACK_ENV'] == 'test'
+
+    account = client.api.account
+    account.messages.create(
+      from: PHONE_NUMBER,
+      to: phone_number,
+      body: body
+    )
+  rescue => e
+    puts e
+    binding.pry
   end
 
   def message_all

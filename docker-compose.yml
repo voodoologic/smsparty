@@ -1,10 +1,17 @@
 version: '2'
 services:
+  nginx:
+    build: ./nginx
+    links:
+      - web:web
+    ports:
+      - 80:80
   web:
     build: .
     links:
-      - redis
+      - redis:redis
+    command: bundle exec rackup -o 0.0.0.0 -p 4567
     ports:
-      - '80:4567'
+      - '4567:4567'
   redis:
     image: 'redis:alpine'
