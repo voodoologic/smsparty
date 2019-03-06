@@ -18,9 +18,14 @@ class Party < Sinatra::Base
 
   set :public_folder => "public", :static => true
 
-  post '/' do
+  post '/publish' do
     return '' unless params.fetch('From', false)
     do_the_right_thing(params)
+  end
+
+  get '/users' do
+    @users = Phone::User.all
+    erb :users, layout: :layout
   end
 
   def do_the_right_thing(message_params)
