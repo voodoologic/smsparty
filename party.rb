@@ -35,23 +35,23 @@ class Party < Sinatra::Base
   end
 
   def process_command(message_params)
-      command = message_params.fetch('Body').match(/\~(?<command>\w+) *(?<name>.*)/)[:command]
-      case command
-      when "add"
-        add_user(message_params)
-      when "stop"
-        stop_user_receiving(message_params)
-      when "start"
-        start_user_receiving(message_params)
-      when "help"
-        show_help(message_params)
-      when "remove"
-        remove_user(message_params)
-      when 'list'
-        list_users(message_params)
-      when 'name'
-        change_name(message_params)
-      end
+    command = message_params.fetch('Body').match(/\~(?<command>\w+) *(?<name>.*)/)[:command]
+    case command
+    when "add"
+      add_user(message_params)
+    when "stop"
+      stop_user_receiving(message_params)
+    when "start"
+      start_user_receiving(message_params)
+    when "help"
+      show_help(message_params)
+    when "remove"
+      remove_user(message_params)
+    when 'list'
+      list_users(message_params)
+    when 'name'
+      change_name(message_params)
+    end
   end
 
   def change_name(message_params)
@@ -213,7 +213,6 @@ unless ENV['RACK_ENV'] == 'test'
     user = Phone::User.new
     user.name = name_phone.fetch('name')
     user.phone_number = name_phone.fetch('phone')
-    user.email = name_phone('email')
     user.save
   end
 end

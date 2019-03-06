@@ -1,5 +1,5 @@
 development:
-  host: localhost
+  host: redis
   port: 6387
   password:
 
@@ -9,6 +9,6 @@ test:
   password:
 
 production:
-  host: localhost
+  host: redis
   port: 6387
   password:
