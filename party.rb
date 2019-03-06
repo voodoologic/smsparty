@@ -17,6 +17,7 @@ class Party < Sinatra::Base
   end
 
   set :public_folder => "public", :static => true
+  set :bind, '0.0.0.0'
 
   post '/publish' do
     return '' unless params.fetch('From', false)
