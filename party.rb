@@ -21,6 +21,10 @@ class Party < Sinatra::Base
   set :public_folder => "public", :static => true
   set :bind, '0.0.0.0'
 
+  get '/' do
+    erb :welcome, layout: :layout
+  end
+
   post '/publish' do
     redirect 'https://www.youtube.com/watch?v=XqZsoesa55w' unless params.keys.include?('From')
 
