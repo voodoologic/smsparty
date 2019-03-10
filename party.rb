@@ -225,7 +225,7 @@ class Party < Sinatra::Base
     if message_importance
       message_important_subscriptions(full_recipients, message_params)
     else
-      message_active_participants(recipients, message_params)
+      message_active_participants(full_recipients, message_params)
     end
   end
 
