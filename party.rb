@@ -1,8 +1,10 @@
 secrets = YAML.load_file('./secrets.yml')
-ACCOUNT_SID=secrets.fetch('account_sid')
-AUTH_TOKEN=secrets.fetch('auth_token')
-PHONE_NUMBER=secrets.fetch('phone_number')
+ACCOUNT_SID=secrets.fetch('account_sid', ENV['ACCOUNT_SID'])
+AUTH_TOKEN=secrets.fetch('auth_token', ENV['AUTH_TOKEN'])
+PHONE_NUMBER=secrets.fetch('phone_number', ENV['PHONE_NUMBER'])
 USERS=secrets.fetch('users', [])
+DOMAIN=secrets.fetch('domain', ENV['DOMAIN'])
+require 'securerandom'
 
 Phonelib.default_country = "US"
 
@@ -20,13 +22,32 @@ class Party < Sinatra::Base
   set :bind, '0.0.0.0'
 
   post '/publish' do
-    return '' unless params.fetch('From', false)
+    redirect 'https://www.youtube.com/watch?v=XqZsoesa55w' unless params.keys.include?('From')
+
     do_the_right_thing(params)
   end
 
   get '/users' do
     @users = Phone::User.all
     erb :users, layout: :layout
+  end
+
+  get '/users/:token' do
+    redirect 'https://www.youtube.com/watch?v=XqZsoesa55w' unless params.keys.include?('token')
+    token = params.fetch('token')
+    @user = Phone::User.find_by_token(token)
+    erb :user, layout: :layout
+  end
+
+  post '/users' do
+    token = params.fetch('token')
+    subscription_level = params.fetch('subscription_level')
+    name = params.fetch('name')
+    @user = Phone::User.find_by_token(token)
+    @user.name = name
+    @user.subscription_level = subscription_level
+    @user.token = nil
+    @user.save
   end
 
   def do_the_right_thing(message_params)
@@ -57,15 +78,37 @@ class Party < Sinatra::Base
       list_users(message_params)
     when 'name'
       change_name(message_params)
+    when 'admin'
+      process_admin(message_params)
     end
   end
 
   def change_name(message_params)
-    user = Phone::User.find_by_phone_number(message_params.fetch('From'))
-    command, name  = disect_command_and_name(message_params)
+    phone_number = message_params.fetch('From')
+    user = Phone::User.find_by_phone_number(phone_number)
+    _, name  = disect_command_and_name(message_params)
     user.name = name
     user.save
     send_message message_params.fetch('From'), 'success'
+  end
+
+  def process_admin(message_params)
+    phone_number = message_params.fetch('From')
+    user = Phone::User.find_by_phone_number(phone_number)
+    create_token_for_user(user)
+    url = create_url(user).to_s
+    send_message phone_number, "visit admin: #{url}"
+  end
+
+  def create_url(user)
+    URI::HTTP.build(
+      { host: DOMAIN, path: "/users/#{user.token}" }
+    )
+  end
+
+  def create_token_for_user(user)
+    user.token = SecureRandom.uuid
+    user.save
   end
 
   def list_users(message_params)
@@ -90,7 +133,7 @@ class Party < Sinatra::Base
   end
 
   def start_user_receiving(message_params)
-    command, name  = disect_command_and_name(message_params)
+    _, name  = disect_command_and_name(message_params)
     if name
       user = Phone::User.find_by_name(name)
     else
@@ -98,10 +141,12 @@ class Party < Sinatra::Base
       user = Phone::User.find_by_phone_number(phone_number)
     end
     user.receives_messages = true
+    user.save
+    send_message message_params.fetch('From'), 'receiving messages'
   end
 
   def stop_user_receiving(message_params)
-    command, name  = disect_command_and_name(message_params)
+    _, name  = disect_command_and_name(message_params)
     if name
       user = Phone::User.find_by_name(name)
     else
@@ -110,16 +155,11 @@ class Party < Sinatra::Base
     end
     user.receives_messages = false
     user.save
-  end
-
-  def message_sender
-
+    send_message message_params.fetch('From'), 'successully stoped mesages'
   end
 
   def message_all_others(message_params)
-    users = Phone::User.all.select do |user|
-      user.receives_messages == true && user.phone_number != message_params.fetch('From')
-    end
+    receivable_users(message_params)
     from_number = Phonelib.parse(message_params.fetch('From'))
     from_user = Phone::User.find_by_phone_number(from_number.to_s)
     message = message_params.fetch('Body').prepend("#{from_user.name}: ")
@@ -172,12 +212,30 @@ class Party < Sinatra::Base
     binding.pry
   end
 
-  def message_all
+  def receivable_users(message_params)
+    message = message_params.fetch('Body')
+    message_importance = message.match(/\!/)
+    if message_importance
+      message_all(message_params)
+    else
+      message_active_participants(message_params)
+    end
+  end
 
+  def message_active_participants(message_params)
+    Phone::User.all.select do |user|
+      user.receives_messages == true && user.phone_number != message_params.fetch('From')
+    end
+  end
+
+  def message_all(message_params)
+    Phone::User.all.reject do |user|
+      user.phone_number == message_params.fetch('From')
+    end
   end
 
   def add_user(message_params)
-    command, name, phone_number  = disect_message(message_params)
+    _, name, phone_number  = disect_message(message_params)
     u = Phone::User.new
     u.name = name
     u.phone_number = phone_number
@@ -185,16 +243,13 @@ class Party < Sinatra::Base
   end
 
   def remove_user(message_params)
-    command, name  = disect_command_and_name(message_params)
+    _, name  = disect_command_and_name(message_params)
     user = Phone::User.find_by_name(name)
     user.delete
   end
 
   def users
     @users = Phone::User.all
-  end
-
-  def name_from_message_params(message_params)
   end
 
   def disect_command_and_name(message_params)

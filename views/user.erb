@@ -1,0 +1,18 @@
+<div class="nes-field">
+  <form action='/users' method="POST">
+    <label for="name_field" class="col-6 col-lg-8 col-md-8 col-sm-8">Your name:</label>
+    <input style='margin-left: 15px; clear:left' name='name' type="text" id="name_field" class="nes-input col-6 col-lg-4 col-md-4 col-sm-8" value="<%=@user.name%>">
+    <input type="hidden" name='token' id="token_field" value="<%=@user.token%>">
+    <hr/>
+    <label for="alert_level_field" class="col-3 col-lg-4 col-md-8 col-sm-8">Participation level:</label>
+    <section style='margin-left: 15px; display: block' class="nes-select" >
+      <select name='subscription_level' required id="alert_level_field">
+        <option value='full'>full</option>
+        <option value="important">important only</option>
+        <option value="none">none</option>
+      </select>
+    </section>
+    <br/>
+    <input style='margin-left: 15px' type='submit' value='save' class="nes-btn pull-right col-3 col-lg-2 col-md-3 col-sm-6">
+  </form>
+</div>

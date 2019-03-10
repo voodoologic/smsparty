@@ -1,6 +1,6 @@
 module Phone
   class User
-    attr_accessor :name, :role, :real_name, :phone_number, :receives_messages, :email, :storage
+    attr_accessor :name, :role, :real_name, :phone_number, :receives_messages, :email, :storage, :token
     def initialize
       @receives_messages = true
     end
@@ -23,6 +23,12 @@ module Phone
     def self.find_by_name(name)
       all.detect do |user|
         user.name == name
+      end
+    end
+
+    def self.find_by_token(token)
+      all.detect do |user|
+        user.token == token
       end
     end
 
@@ -54,7 +60,8 @@ module Phone
         phone_number: phone_number,
         receives_messages: receives_messages ,
         real_name: real_name,
-        email: email
+        email: email,
+        token: token,
       }
     end
 

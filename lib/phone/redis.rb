@@ -19,12 +19,12 @@ module Phone
     end
 
     def find_by_phone_number(number)
-      redis.mapped_hmget(number, :phone_number, :name, :role, :real_name, :receives_messages, :email)
+      redis.mapped_hmget(number, :phone_number, :name, :role, :real_name, :receives_messages, :email, :token)
     end
 
     def all
       @redis.keys.map do |phone_number|
-        redis.mapped_hmget(phone_number, :name, :phone_number, :role, :receives_messages, :email)
+        redis.mapped_hmget(phone_number, :name, :phone_number, :role, :receives_messages, :email, :token)
       end
     end
 

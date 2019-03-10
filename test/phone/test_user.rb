@@ -17,9 +17,11 @@ describe Phone::User do
   it 'saves attrs' do
     user = Phone::User.new
     user.phone_number = '4155044070'
+    user.token = 'blah'
     user.save
     assert user.receives_messages
     assert user.phone_number
+    assert user.token
   end
 
   it 'changes attrs' do

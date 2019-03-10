@@ -54,21 +54,22 @@ describe Phone::Storage do
 
   it 'deletes a user from list' do
     test_params['Body'] = '~remove tommy😜'
+    test_params['From'] = '+141555555555'
     assert_equal app_instance.users.count, 3
-    post '/', test_params
+    post '/publish', test_params
     assert_equal app_instance.users.count, 2
   end
 
   it 'lets a user stop messages' do
     test_params['Body']= '~stop'
-    post '/', test_params
+    post '/publish', test_params
     user = Phone::User.find_by_name('tommy😜')
     refute user.receives_messages
   end
 
   it 'lets a user start messages' do
     test_params['Body']= '~start'
-    post '/', test_params
+    post '/publish', test_params
     user = Phone::User.find_by_name('tommy😜')
     assert user.receives_messages
   end
@@ -82,9 +83,16 @@ describe Phone::Storage do
 
   it 'stops a user recieving messages' do
     test_params['Body'] = '~stop tommy😜'
-    post '/', test_params
+    post '/publish', test_params
     user = app_instance.users.first
     refute user.receives_messages
+  end
+
+  it 'creates a token' do
+    test_params['Body'] = '~admin'
+    post '/publish', test_params
+    user = app_instance.users.first
+    assert user.token
   end
 
   it 'messages other users' do
@@ -92,12 +100,12 @@ describe Phone::Storage do
     user = Phone::User.all.first
     user.receives_messages = true
     user.save
-    post '/', test_params
+    post '/publish', test_params
   end
 
   it 'displays the help menu' do
     test_params['Body'] = '~help'
-    post '/', test_params
+    post '/publish', test_params
 
   end
 
