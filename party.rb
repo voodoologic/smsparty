@@ -175,7 +175,6 @@ class Party < Sinatra::Base
     end.values
   end
 
-
   def send_message(phone_number, body, media = [])
     if media.size == 0
       sms_send(phone_number, body)
@@ -214,7 +213,7 @@ class Party < Sinatra::Base
 
   def receivable_users(message_params)
     message = message_params.fetch('Body')
-    message_importance = message.match(/\!/)
+    message_importance = message.match(/^\!/)
     if message_importance
       message_all(message_params)
     else
