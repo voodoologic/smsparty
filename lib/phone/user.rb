@@ -1,22 +1,14 @@
 module Phone
   class User
-    attr_accessor :name, :role, :real_name, :phone_number, :receives_messages, :email, :storage, :token
+    attr_accessor :name, :role, :real_name, :phone_number, :subscription_level, :email, :storage, :token
     def initialize
-      @receives_messages = true
+      @subscription_level = 'full'
     end
 
     def self.all
       storage_array = storage.all
       storage_array.map do |hash|
         create_from_hash(hash)
-      end
-    end
-
-    def receives_messages
-      if @receives_messages == 'true' || @receives_messages == true
-        true
-      else
-        false
       end
     end
 
@@ -49,16 +41,12 @@ module Phone
       storage ||= Phone::Storage.new
     end
 
-    def boolean_receiveing_text(string_of_bool)
-      string_of_bool == 'true' || string_of_bool == 'True'
-    end
-
     def attributes_to_hash
       {
         name: name,
         role: role,
         phone_number: phone_number,
-        receives_messages: receives_messages ,
+        subscription_level: subscription_level,
         real_name: real_name,
         email: email,
         token: token,

@@ -128,6 +128,7 @@ class Party < Sinatra::Base
       ~start start messages flowing
       ~name change your name
       ~list list users
+      ~admin link to admin page
     EOF
     send_message(phone_number, body)
   end
@@ -140,7 +141,7 @@ class Party < Sinatra::Base
       phone_number = message_params.fetch('From')
       user = Phone::User.find_by_phone_number(phone_number)
     end
-    user.receives_messages = true
+    user.subscription_level = 'full'
     user.save
     send_message message_params.fetch('From'), 'receiving messages'
   end
@@ -153,13 +154,19 @@ class Party < Sinatra::Base
       phone_number = message_params.fetch('From')
       user = Phone::User.find_by_phone_number(phone_number)
     end
-    user.receives_messages = false
+    user.subscription_level = 'important'
     user.save
     send_message message_params.fetch('From'), 'successully stoped mesages'
   end
 
+  def message_important_subscriptions(full_recipients, message_params)
+    full_recipients.select do |user|
+      user.subscription_level && ['full', 'alerts']
+    end
+  end
+
   def message_all_others(message_params)
-    receivable_users(message_params)
+    users = receivable_users(message_params)
     from_number = Phonelib.parse(message_params.fetch('From'))
     from_user = Phone::User.find_by_phone_number(from_number.to_s)
     message = message_params.fetch('Body').prepend("#{from_user.name}: ")
@@ -214,20 +221,21 @@ class Party < Sinatra::Base
   def receivable_users(message_params)
     message = message_params.fetch('Body')
     message_importance = message.match(/^\!/)
+    full_recipients = exclude_sender(message_params)
     if message_importance
-      message_all(message_params)
+      message_important_subscriptions(full_recipients, message_params)
     else
-      message_active_participants(message_params)
+      message_active_participants(recipients, message_params)
     end
   end
 
-  def message_active_participants(message_params)
-    Phone::User.all.select do |user|
-      user.receives_messages == true && user.phone_number != message_params.fetch('From')
+  def message_active_participants(full_recipients, message_params)
+    full_recipients.select do |user|
+      user.subscription_level == 'full' && user.phone_number != message_params.fetch('From')
     end
   end
 
-  def message_all(message_params)
+  def exclude_sender(message_params)
     Phone::User.all.reject do |user|
       user.phone_number == message_params.fetch('From')
     end
@@ -245,10 +253,6 @@ class Party < Sinatra::Base
     _, name  = disect_command_and_name(message_params)
     user = Phone::User.find_by_name(name)
     user.delete
-  end
-
-  def users
-    @users = Phone::User.all
   end
 
   def disect_command_and_name(message_params)

@@ -19,18 +19,13 @@ module Phone
     end
 
     def find_by_phone_number(number)
-      redis.mapped_hmget(number, :phone_number, :name, :role, :real_name, :receives_messages, :email, :token)
+      redis.mapped_hmget(number, :phone_number, :name, :role, :real_name, :subscription_level, :email, :token)
     end
 
     def all
       @redis.keys.map do |phone_number|
-        redis.mapped_hmget(phone_number, :name, :phone_number, :role, :receives_messages, :email, :token)
+        redis.mapped_hmget(phone_number, :name, :phone_number, :role, :subscription_level, :email, :token)
       end
-    end
-
-    def store_new_user(name, phone_number, role = 'user')
-      initial_user_data = {name: name, phone_number: phone_number, role: role, receives_messages: true }
-      @redis.mapped_hmset(name, initial_user_data)
     end
 
     def remove_user(phone_number)

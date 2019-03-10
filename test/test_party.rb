@@ -8,7 +8,6 @@ end
 
 describe Party do
   def setup
-    $stop = true
     Phone::Storage.new.clean_house
   end
 
@@ -26,6 +25,7 @@ describe Phone::Storage do
     p
   end
 
+  let(:users) { Phone::User.all }
   after do
     Phone::Storage.new.clean_house
     test_params['Body'] = 'message'
@@ -45,60 +45,68 @@ describe Phone::Storage do
   end
 
   it 'add a new user' do
-    refute_nil(app_instance.users)
+    refute_nil(users)
   end
 
   it 'packages a user in a class' do
-    assert_kind_of Phone::User, app_instance.users.first
+    assert_kind_of Phone::User, users.first
   end
 
+  it 'creates a one-time admin token to consume' do
+    test_params['Body'] = '~admin'
+    post '/publish', test_params
+    assert users
+  end
   it 'deletes a user from list' do
     test_params['Body'] = '~remove tommy😜'
     test_params['From'] = '+141555555555'
-    assert_equal app_instance.users.count, 3
+    assert_equal Phone::User.all.count, 3
     post '/publish', test_params
-    assert_equal app_instance.users.count, 2
+    assert_equal Phone::User.all.count, 2
   end
 
   it 'lets a user stop messages' do
-    test_params['Body']= '~stop'
+    test_params['Body'] = '~stop'
+    test_params['From'] = '+14155044070'
+    $debug = true
     post '/publish', test_params
     user = Phone::User.find_by_name('tommy😜')
-    refute user.receives_messages
+    $debug = false
+    assert_equal 'important', user.subscription_level
   end
 
   it 'lets a user start messages' do
     test_params['Body']= '~start'
     post '/publish', test_params
     user = Phone::User.find_by_name('tommy😜')
-    assert user.receives_messages
+    assert_equal 'full', user.subscription_level
   end
 
   it 'starts a user receiving messages' do
     test_params['Body'] = '~start tommy😜'
     app_instance.do_the_right_thing(test_params)
-    user = app_instance.users.first
-    assert user.receives_messages
+    user = users.first
+    assert_equal 'full', user.subscription_level
   end
 
   it 'stops a user recieving messages' do
     test_params['Body'] = '~stop tommy😜'
     post '/publish', test_params
-    user = app_instance.users.first
-    refute user.receives_messages
+    user = users.first
+    assert_equal 'important', user.subscription_level
   end
 
   it 'creates a token' do
     test_params['Body'] = '~admin'
     post '/publish', test_params
-    user = app_instance.users.first
+    user = users.first
     assert user.token
   end
 
   it 'messages other users' do
     test_params['Body'] = 'message'
     user = Phone::User.all.first
-    user.receives_messages = true
+    user.subscription_level = 'full'
     user.save
     post '/publish', test_params
   end

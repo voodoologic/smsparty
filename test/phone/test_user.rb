@@ -19,7 +19,7 @@ describe Phone::User do
     user.phone_number = '4155044070'
     user.token = 'blah'
     user.save
-    assert user.receives_messages
+    refute_nil user.subscription_level
     assert user.phone_number
     assert user.token
   end
@@ -28,10 +28,9 @@ describe Phone::User do
     user = Phone::User.new
     user.phone_number = '4155044070'
     user.name = 'Tommy'
-    user.receives_messages = false
+    user.subscription_level = 'full'
     user.save
-    refute user.receives_messages
-    refute Phone::User.all.first.receives_messages
+    assert_equal 'full', user.subscription_level
   end
 
 end
