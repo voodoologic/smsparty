@@ -131,7 +131,6 @@ class Party < Sinatra::Base
       ~stop stop messages from flowing
       ~start start messages flowing
       ~name change your name
-      ~list list users
       ~admin link to admin page
     EOF
     send_message(phone_number, body)

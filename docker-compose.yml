@@ -6,6 +6,12 @@ services:
       - web:web
     ports:
       - 80:80
+      - 443:443
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+      - /var/lib/letsencrypt:/var/lib/letsencrypt
+    depends_on:
+      - web
   web:
     build: .
     links:
