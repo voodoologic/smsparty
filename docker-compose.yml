@@ -2,6 +2,7 @@ version: '2'
 services:
   nginx:
     build: ./nginx
+    restart: always
     links:
       - web:web
     ports:
@@ -14,10 +15,14 @@ services:
       - web
   web:
     build: .
+    restart: always
     links:
       - redis:redis
     command: bundle exec rackup -o 0.0.0.0 -p 4567
+    environment:
+      - RACK_ENV=production
     ports:
       - '4567:4567'
   redis:
+    restart: always
     image: 'redis:alpine'
