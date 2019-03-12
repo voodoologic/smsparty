@@ -1,7 +1,8 @@
 source "https://rubygems.org/"
 
 # App Stack
-gem "sinatra", "~> 1.4"
+gem "sinatra"
+gem 'puma'
 
 
 gem 'twilio-ruby'
