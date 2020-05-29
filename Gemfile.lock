@@ -55,7 +55,7 @@ GEM
       rack
     rack-test (0.8.3)
       rack (>= 1.0, < 3)
-    rake (10.5.0)
+    rake (12.3.3)
     rb-fsevent (0.10.4)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
@@ -88,7 +88,7 @@ DEPENDENCIES
   pry-byebug
   puma
   rack-test (~> 0.6)
-  rake (~> 10.0)
+  rake (~> 12.3)
   redis (~> 3.0)
   ruby_gntp
   sinatra

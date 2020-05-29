@@ -17,7 +17,7 @@ gem "redis", "~> 3.0", :require => ["redis/connection/hiredis", "redis"]
 gem "fakeredis", "~> 0.4"
 
 group :development do
-  gem "rake", "~> 10.0"
+  gem "rake", "~> 12.3"
   gem "minitest", "~> 5.2"
   gem "rack-test", "~> 0.6"
 end
